@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Can Your Pet</title>
+  <style>
+    :root {
+      --bg: #ffe4ec;
+      --panel: #ffd0de;
+      --active: #ffb6cc;
+      --text: #000;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: flex;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
+    }
+    nav {
+      width: 30%;
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+    }
+    nav button {
+      width: 80%;
+      padding: 18px;
+      font: inherit;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      background: transparent;
+      border: 2px solid var(--text);
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    nav button:hover { background: var(--active); }
+    nav button[aria-selected="true"] { background: var(--active); }
+    main {
+      width: 70%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    section { display: none; }
+    section.active { display: block; }
+    h1 { font-size: 2.5rem; margin: 0; }
+    #dress.active { display: flex; width: 100%; height: 100%; }
+    .stage {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 0;
+    }
+    .pet { position: relative; height: 70vh; aspect-ratio: 433 / 461; }
+    .pet img { position: absolute; inset: 0; width: 100%; height: 100%; }
+    #worn { display: none; }
+    .options {
+      width: 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding-right: 16px;
+    }
+    .options button {
+      width: 120px;
+      height: 120px;
+      padding: 4px;
+      background: transparent;
+      border: 2px solid var(--text);
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .options button:hover, .options button.on { background: var(--active); }
+    .options button img { width: 100%; height: 100%; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <nav role="tablist">
+    <button role="tab" data-tab="home" aria-selected="true">HOME</button>
+    <button role="tab" data-tab="dress" aria-selected="false">DRESS UP</button>
+    <button role="tab" data-tab="bike" aria-selected="false">RIDE BIKE</button>
+  </nav>
+  <main>
+    <section id="home" class="active"><h1>HOME</h1></section>
+    <section id="dress">
+      <div class="stage">
+        <div class="pet">
+          <img src="assets/chicken.png" alt="Chicken">
+          <img id="worn" alt="Dress">
+        </div>
+      </div>
+      <div class="options">
+        <button data-dress="assets/dress-pink.png" aria-label="Pink dress"><img src="assets/dress-pink.png" alt=""></button>
+        <button data-dress="assets/dress-blue.png" aria-label="Blue dress"><img src="assets/dress-blue.png" alt=""></button>
+        <button data-dress="assets/dress-purple.png" aria-label="Purple dress"><img src="assets/dress-purple.png" alt=""></button>
+        <button id="trash" aria-label="Remove dress"><img src="assets/trash.png" alt=""></button>
+      </div>
+    </section>
+    <section id="bike"><h1>RIDE BIKE</h1></section>
+  </main>
+  <script>
+    const tabs = document.querySelectorAll('nav button');
+    const panels = document.querySelectorAll('section');
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+      tabs.forEach(t => t.setAttribute('aria-selected', t === tab));
+      panels.forEach(p => p.classList.toggle('active', p.id === tab.dataset.tab));
+    }));
+
+    const worn = document.getElementById('worn');
+    const dressBtns = document.querySelectorAll('[data-dress]');
+    dressBtns.forEach(b => b.addEventListener('click', () => {
+      worn.src = b.dataset.dress;
+      worn.style.display = 'block';
+      dressBtns.forEach(o => o.classList.toggle('on', o === b));
+    }));
+    document.getElementById('trash').addEventListener('click', () => {
+      worn.style.display = 'none';
+      dressBtns.forEach(o => o.classList.remove('on'));
+    });
+  </script>
+</body>
+</html>
