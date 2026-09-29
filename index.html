@@ -66,10 +66,37 @@
       justify-content: center;
       align-items: center;
       min-width: 0;
+      flex-direction: column;
+      gap: 16px;
     }
+    #export {
+      padding: 10px 20px;
+      font: inherit;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      background: transparent;
+      border: 2px solid var(--text);
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    #export:hover { background: var(--active); }
     .pet { position: relative; height: 70vh; aspect-ratio: 433 / 461; }
     .pet img { position: absolute; inset: 0; width: 100%; height: 100%; }
-    #worn { display: none; }
+    #wornBox { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: none; touch-action: none; }
+    #wornBox img { inset: auto; left: 0; top: 0; cursor: grab; user-select: none; -webkit-user-drag: none; }
+    #wornBox img:hover { filter: brightness(1.2); }
+    #wornBox.selected img { filter: none; cursor: grabbing; }
+    #wornBox .tint { position: absolute; inset: 0; display: none; pointer-events: none;
+      background: rgba(255, 0, 0, 0.4);
+      -webkit-mask: var(--mask) center / 100% 100% no-repeat; mask: var(--mask) center / 100% 100% no-repeat; }
+    #wornBox.selected .tint { display: block; }
+    #wornBox .handle { position: absolute; width: 14px; height: 14px; margin: -7px; display: none;
+      background: #fff; border: 2px solid #d00; border-radius: 3px; }
+    #wornBox.selected .handle { display: block; }
+    .handle[data-c="nw"] { left: 0; top: 0; cursor: nwse-resize; }
+    .handle[data-c="ne"] { left: 100%; top: 0; cursor: nesw-resize; }
+    .handle[data-c="sw"] { left: 0; top: 100%; cursor: nesw-resize; }
+    .handle[data-c="se"] { left: 100%; top: 100%; cursor: nwse-resize; }
     .options {
       width: 160px;
       display: flex;
@@ -102,9 +129,15 @@
     <section id="home" class="active"><h1>HOME</h1></section>
     <section id="dress">
       <div class="stage">
+        <button id="export">EXPORT PNG</button>
         <div class="pet">
-          <img src="assets/chicken.png" alt="Chicken">
-          <img id="worn" alt="Dress">
+          <img id="chicken" src="assets/chicken.png" alt="Chicken">
+          <div id="wornBox">
+            <img id="worn" alt="Dress" draggable="false">
+            <div class="tint"></div>
+            <span class="handle" data-c="nw"></span><span class="handle" data-c="ne"></span>
+            <span class="handle" data-c="sw"></span><span class="handle" data-c="se"></span>
+          </div>
         </div>
       </div>
       <div class="options">
@@ -124,16 +157,102 @@
       panels.forEach(p => p.classList.toggle('active', p.id === tab.dataset.tab));
     }));
 
+    const pet = document.querySelector('.pet');
+    const box = document.getElementById('wornBox');
     const worn = document.getElementById('worn');
+    const tint = box.querySelector('.tint');
     const dressBtns = document.querySelectorAll('[data-dress]');
+    const MIN = 30;
+    let current = null;
+
+    function setBox(x, y, w, h) {
+      const r = pet.getBoundingClientRect();
+      Object.assign(box.style, { left: x / r.width * 100 + '%', top: y / r.height * 100 + '%',
+        width: w / r.width * 100 + '%', height: h / r.height * 100 + '%' });
+    }
+    function resetBox() {
+      Object.assign(box.style, { left: '0', top: '0', width: '100%', height: '100%' });
+    }
+    function hideDress() {
+      current = null;
+      box.style.display = 'none';
+      box.classList.remove('selected');
+      resetBox();
+      dressBtns.forEach(o => o.classList.remove('on'));
+    }
+    worn.style.width = worn.style.height = '100%';
+
     dressBtns.forEach(b => b.addEventListener('click', () => {
+      if (current === b) return hideDress();
+      current = b;
       worn.src = b.dataset.dress;
-      worn.style.display = 'block';
+      tint.style.setProperty('--mask', `url("${b.dataset.dress}")`);
+      box.style.display = 'block';
       dressBtns.forEach(o => o.classList.toggle('on', o === b));
     }));
-    document.getElementById('trash').addEventListener('click', () => {
-      worn.style.display = 'none';
-      dressBtns.forEach(o => o.classList.remove('on'));
+    document.getElementById('trash').addEventListener('click', hideDress);
+
+    // select / move / resize
+    let drag = null;
+    box.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      const pr = pet.getBoundingClientRect(), br = box.getBoundingClientRect();
+      const rect = { x: br.left - pr.left, y: br.top - pr.top, w: br.width, h: br.height };
+      const c = e.target.dataset.c;
+      box.classList.add('selected');
+      box.setPointerCapture(e.pointerId);
+      if (c) {
+        drag = { mode: 'resize', c, rect, pr, ratio: rect.w / rect.h,
+          ax: c.includes('w') ? rect.x + rect.w : rect.x, ay: c.includes('n') ? rect.y + rect.h : rect.y };
+      } else {
+        drag = { mode: 'move', rect, pr, sx: e.clientX, sy: e.clientY };
+      }
+    });
+    box.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const { rect, pr } = drag;
+      if (drag.mode === 'move') {
+        setBox(rect.x + e.clientX - drag.sx, rect.y + e.clientY - drag.sy, rect.w, rect.h);
+      } else {
+        const mx = e.clientX - pr.left, my = e.clientY - pr.top;
+        // keep aspect ratio: use whichever axis the mouse has moved further along
+        const w = Math.max(MIN, Math.abs(mx - drag.ax), Math.abs(my - drag.ay) * drag.ratio);
+        const h = w / drag.ratio;
+        setBox(drag.c.includes('w') ? drag.ax - w : drag.ax, drag.c.includes('n') ? drag.ay - h : drag.ay, w, h);
+      }
+    });
+    const endDrag = () => { drag = null; };
+    box.addEventListener('pointerup', endDrag);
+    box.addEventListener('pointercancel', endDrag);
+    // export a square PNG: chicken bounds (opaque pixels) plus ~1cm padding all round
+    const BODY = { x: 10, y: 21, w: 413, h: 429 }; // opaque bounds inside chicken.png (433x461)
+    document.getElementById('export').addEventListener('click', () => {
+      const chicken = document.getElementById('chicken');
+      const s = pet.getBoundingClientRect().height / chicken.naturalHeight; // display px per image px
+      const pad = 96 / 2.54 / s; // 1cm in image px
+      const side = Math.round(Math.max(BODY.w, BODY.h) + 2 * pad);
+      const ox = BODY.x + BODY.w / 2 - side / 2, oy = BODY.y + BODY.h / 2 - side / 2;
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = side;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg');
+      ctx.fillRect(0, 0, side, side);
+      ctx.drawImage(chicken, -ox, -oy);
+      if (current) {
+        const pr = pet.getBoundingClientRect(), br = box.getBoundingClientRect();
+        ctx.drawImage(worn, (br.left - pr.left) / s - ox, (br.top - pr.top) / s - oy, br.width / s, br.height / s);
+      }
+      cv.toBlob(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'chicken.png';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+    });
+    // click anywhere else deselects
+    document.addEventListener('pointerdown', e => {
+      if (!box.contains(e.target)) box.classList.remove('selected');
     });
   </script>
 </body>
