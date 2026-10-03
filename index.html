@@ -15,6 +15,7 @@
       --panel: #ffd0de;
       --active: #ffb6cc;
       --text: #000;
+      --pet-h: 60vh;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
@@ -59,7 +60,7 @@
     section { display: none; }
     section.active { display: block; }
     h1 { font-size: 2.5rem; margin: 0; }
-    #dress.active { display: flex; width: 100%; height: 100%; }
+    .scene.active { display: flex; width: 100%; height: 100%; }
     .stage {
       flex: 1;
       display: flex;
@@ -80,7 +81,7 @@
       cursor: pointer;
     }
     #export:hover { background: var(--active); }
-    .pet { position: relative; height: 70vh; aspect-ratio: 433 / 461; }
+    .pet { position: relative; height: var(--pet-h); aspect-ratio: 433 / 461; }
     .pet img { position: absolute; inset: 0; width: 100%; height: 100%; }
     #wornBox { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: none; touch-action: none; }
     #wornBox img { inset: auto; left: 0; top: 0; cursor: grab; user-select: none; -webkit-user-drag: none; }
@@ -116,18 +117,56 @@
       cursor: pointer;
     }
     .options button:hover, .options button.on { background: var(--active); }
-    .options button img { width: 100%; height: 100%; object-fit: contain; }
+    .options button img, .options button svg { width: 100%; height: 100%; object-fit: contain; }
+    .options button:disabled { opacity: 0.5; cursor: default; }
+
+    /* shower */
+    .shower-stage { padding: calc(var(--pet-h) * 0.2) calc(var(--pet-h) * 0.22) 0; }
+    .faucet { position: absolute; left: 20%; bottom: 90%; width: 60%; height: auto; pointer-events: none; }
+    .lever { position: absolute; left: 102%; top: 40%; width: 22%; aspect-ratio: 1; padding: 0;
+      background: none; border: 0; cursor: pointer; }
+    .lever svg { width: 100%; height: 100%; }
+    .lever .bar { transform-origin: 50px 50px; transition: transform 0.25s; }
+    .lever.on .bar { transform: rotate(75deg); }
+    .water { display: none; position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .running .water { display: block; }
+    .drop { position: absolute; top: 0; width: 2.5%; height: 6%; border-radius: 50%;
+      background: #4db8ff; opacity: 0.8; animation: fall 0.7s linear infinite; }
+    @keyframes fall { from { transform: translateY(0); opacity: 0.9; } to { transform: translateY(1400%); opacity: 0.2; } }
+    .running .chick { animation: wiggle 0.35s ease-in-out infinite; }
+    @keyframes wiggle { 50% { transform: rotate(1.5deg) scale(1.01); } }
+
+    /* food */
+    .food { position: absolute; width: 22%; aspect-ratio: 1; pointer-events: none; }
+    .food svg { width: 100%; height: 100%; }
+
+    @media (pointer: coarse) {
+      #wornBox .handle { width: 26px; height: 26px; margin: -13px; }
+    }
+    @media (max-width: 700px) {
+      :root { --pet-h: 34vh; }
+      body { flex-direction: column; }
+      nav { width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 8px; }
+      nav button { width: auto; padding: 8px 10px; font-size: 0.75rem; }
+      main { width: 100%; flex: 1; min-height: 0; }
+      .scene.active { flex-direction: column; }
+      .stage { min-height: 0; gap: 8px; }
+      .options { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 8px; }
+      .options button { width: 64px; height: 64px; }
+    }
   </style>
 </head>
 <body>
   <nav role="tablist">
     <button role="tab" data-tab="home" aria-selected="true">HOME</button>
     <button role="tab" data-tab="dress" aria-selected="false">DRESS UP</button>
+    <button role="tab" data-tab="shower" aria-selected="false">SHOWER</button>
+    <button role="tab" data-tab="food" aria-selected="false">EAT</button>
     <button role="tab" data-tab="bike" aria-selected="false">RIDE BIKE</button>
   </nav>
   <main>
     <section id="home" class="active"><h1>HOME</h1></section>
-    <section id="dress">
+    <section id="dress" class="scene">
       <div class="stage">
         <button id="export">EXPORT PNG</button>
         <div class="pet">
@@ -145,6 +184,28 @@
         <button data-dress="assets/dress-blue.png" aria-label="Blue dress"><img src="assets/dress-blue.png" alt=""></button>
         <button data-dress="assets/dress-purple.png" aria-label="Purple dress"><img src="assets/dress-purple.png" alt=""></button>
         <button id="trash" aria-label="Remove dress"><img src="assets/trash.png" alt=""></button>
+      </div>
+    </section>
+    <section id="shower" class="scene">
+      <div class="stage shower-stage">
+        <div class="pet" id="showerPet">
+          <svg class="faucet" viewBox="0 0 200 80"><rect x="90" y="0" width="20" height="30" fill="#9aa5b1"/><rect x="70" y="26" width="60" height="14" rx="5" fill="#7d8996"/><path d="M60 42h80l30 34H30z" fill="#b8c2cc" stroke="#7d8996" stroke-width="3" stroke-linejoin="round"/><g fill="#7d8996"><circle cx="60" cy="66" r="3"/><circle cx="80" cy="66" r="3"/><circle cx="100" cy="66" r="3"/><circle cx="120" cy="66" r="3"/><circle cx="140" cy="66" r="3"/></g></svg>
+          <img class="chick" src="assets/chicken.png" alt="Chicken">
+          <div class="water"></div>
+          <button class="lever" id="lever" aria-label="Toggle water" aria-pressed="false"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#b8c2cc" stroke="#7d8996" stroke-width="5"/><g class="bar"><rect x="46" y="6" width="8" height="46" rx="4" fill="#e63946" stroke="#000" stroke-width="2"/><circle cx="50" cy="8" r="8" fill="#e63946" stroke="#000" stroke-width="2"/></g><circle cx="50" cy="50" r="8" fill="#7d8996"/></svg></button>
+        </div>
+      </div>
+    </section>
+    <section id="food" class="scene">
+      <div class="stage">
+        <div class="pet" id="foodPet">
+          <img class="chick" src="assets/chicken.png" alt="Chicken">
+        </div>
+      </div>
+      <div class="options">
+        <button data-food="carrot" aria-label="Carrot"><svg viewBox="0 0 100 100"><path d="M58 30c-6-14 0-22 8-24 0 8 4 12 2 24z" fill="#3fa34d"/><path d="M62 32c8-12 18-14 26-10-4 8-12 14-22 16z" fill="#4cbb5a"/><path d="M38 36c14-10 32-4 30 14L16 90C10 70 20 48 38 36z" fill="#ff8a1f"/><path d="M40 52l10 2M32 66l10 2M48 42l8 3" stroke="#d96a00" stroke-width="3" stroke-linecap="round"/></svg></button>
+        <button data-food="drumstick" aria-label="Chicken drumstick"><svg viewBox="0 0 100 100"><path d="M44 62L20 84" stroke="#f5ecd8" stroke-width="9" stroke-linecap="round"/><circle cx="14" cy="80" r="7" fill="#f5ecd8"/><circle cx="22" cy="90" r="7" fill="#f5ecd8"/><ellipse cx="62" cy="38" rx="30" ry="24" fill="#c8641e" transform="rotate(-40 62 38)"/><ellipse cx="56" cy="30" rx="14" ry="8" fill="#e0853a" transform="rotate(-40 56 30)"/></svg></button>
+        <button data-food="pizza" aria-label="Pizza"><svg viewBox="0 0 100 100"><path d="M50 94L10 24Q50 8 90 24z" fill="#ffc94d" stroke="#e8a33a" stroke-width="3" stroke-linejoin="round"/><path d="M10 24Q50 8 90 24" fill="none" stroke="#d98b3a" stroke-width="9" stroke-linecap="round"/><circle cx="36" cy="36" r="7" fill="#d62828"/><circle cx="62" cy="38" r="7" fill="#d62828"/><circle cx="50" cy="60" r="7" fill="#d62828"/></svg></button>
       </div>
     </section>
     <section id="bike"><h1>RIDE BIKE</h1></section>
@@ -254,6 +315,48 @@
     document.addEventListener('pointerdown', e => {
       if (!box.contains(e.target)) box.classList.remove('selected');
     });
+
+    // shower
+    const showerPet = document.getElementById('showerPet');
+    const lever = document.getElementById('lever');
+    const water = showerPet.querySelector('.water');
+    for (let i = 0; i < 18; i++) {
+      const d = document.createElement('span');
+      d.className = 'drop';
+      d.style.left = 38 + Math.random() * 24 + '%';
+      d.style.animationDelay = -Math.random() * 0.7 + 's';
+      water.appendChild(d);
+    }
+    lever.addEventListener('click', () => {
+      const on = showerPet.classList.toggle('running');
+      lever.classList.toggle('on', on);
+      lever.setAttribute('aria-pressed', on);
+    });
+
+    // food: fly to the beak, get bitten away
+    const foodPet = document.getElementById('foodPet');
+    const foodBtns = document.querySelectorAll('[data-food]');
+    const MOUTH = { x: 52, y: 36 }; // % of the pet, just in front of the beak
+    foodBtns.forEach(b => b.addEventListener('click', async () => {
+      foodBtns.forEach(o => o.disabled = true);
+      const f = document.createElement('div');
+      f.className = 'food';
+      f.innerHTML = b.innerHTML;
+      foodPet.appendChild(f);
+      const at = (x, y, sc, rot) => ({ left: x + '%', top: y + '%',
+        transform: `translate(-50%, -50%) scale(${sc}) rotate(${rot}deg)` });
+      const anim = f.animate([
+        at(95, 85, 1, 25), at(MOUTH.x, MOUTH.y, 1, -10),
+        at(MOUTH.x, MOUTH.y, 0.75, -10), at(MOUTH.x, MOUTH.y, 0.5, -10),
+        at(MOUTH.x, MOUTH.y, 0.25, -10), at(MOUTH.x, MOUTH.y, 0, -10)
+      ], { duration: 2000, easing: 'ease-in-out', fill: 'forwards' });
+      foodPet.querySelector('.chick').animate(
+        [{ transform: 'none' }, { transform: 'scale(1.03, 0.95)' }, { transform: 'none' }],
+        { duration: 220, delay: 700, iterations: 4 });
+      await anim.finished;
+      f.remove();
+      foodBtns.forEach(o => o.disabled = false);
+    }));
   </script>
 </body>
 </html>
