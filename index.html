@@ -16,6 +16,8 @@
       --active: #ffb6cc;
       --text: #000;
       --pet-h: 60vh;
+      --pad-r: 160px;
+      --pad-b: 0px;
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
@@ -26,7 +28,7 @@
       font-family: system-ui, sans-serif;
     }
     nav {
-      width: 30%;
+      width: 15%;
       background: var(--panel);
       display: flex;
       flex-direction: column;
@@ -37,9 +39,9 @@
     }
     nav button {
       width: 80%;
-      padding: 18px;
+      padding: 18px 4px;
       font: inherit;
-      font-size: 1.1rem;
+      font-size: clamp(0.75rem, 1.1vw, 1.1rem);
       font-weight: 700;
       letter-spacing: 0.05em;
       color: var(--text);
@@ -51,7 +53,7 @@
     nav button:hover { background: var(--active); }
     nav button[aria-selected="true"] { background: var(--active); }
     main {
-      width: 70%;
+      width: 85%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -60,17 +62,23 @@
     section { display: none; }
     section.active { display: block; }
     h1 { font-size: 2.5rem; margin: 0; }
-    .scene.active { display: flex; width: 100%; height: 100%; }
+    .scene.active { display: flex; position: relative; width: 100%; height: 100%; }
     .stage {
       flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
       min-width: 0;
-      flex-direction: column;
-      gap: 16px;
+      position: relative;
+      padding: 0 var(--pad-r) var(--pad-b) 0;
     }
     #export {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 12px;
+      white-space: nowrap;
       padding: 10px 20px;
       font: inherit;
       font-weight: 700;
@@ -81,7 +89,7 @@
       cursor: pointer;
     }
     #export:hover { background: var(--active); }
-    .pet { position: relative; height: var(--pet-h); aspect-ratio: 433 / 461; }
+    .pet { position: relative; z-index: 1; height: var(--pet-h); aspect-ratio: 433 / 461; }
     .pet img { position: absolute; inset: 0; width: 100%; height: 100%; }
     #wornBox { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: none; touch-action: none; }
     #wornBox img { inset: auto; left: 0; top: 0; cursor: grab; user-select: none; -webkit-user-drag: none; }
@@ -99,6 +107,10 @@
     .handle[data-c="sw"] { left: 0; top: 100%; cursor: nesw-resize; }
     .handle[data-c="se"] { left: 100%; top: 100%; cursor: nwse-resize; }
     .options {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
       width: 160px;
       display: flex;
       flex-direction: column;
@@ -121,18 +133,17 @@
     .options button:disabled { opacity: 0.5; cursor: default; }
 
     /* shower */
-    .shower-stage { padding: calc(var(--pet-h) * 0.2) calc(var(--pet-h) * 0.22) 0; }
-    .faucet { position: absolute; left: 20%; bottom: 90%; width: 60%; height: auto; pointer-events: none; }
+    .faucet { position: absolute; left: 20%; bottom: 106%; width: 60%; height: auto; pointer-events: none; }
     .lever { position: absolute; left: 102%; top: 40%; width: 22%; aspect-ratio: 1; padding: 0;
       background: none; border: 0; cursor: pointer; }
     .lever svg { width: 100%; height: 100%; }
     .lever .bar { transform-origin: 50px 50px; transition: transform 0.25s; }
     .lever.on .bar { transform: rotate(75deg); }
-    .water { display: none; position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .water { display: none; position: absolute; left: 0; right: 0; top: -4%; bottom: 0; pointer-events: none; overflow: hidden; }
     .running .water { display: block; }
     .drop { position: absolute; top: 0; width: 2.5%; height: 6%; border-radius: 50%;
       background: #4db8ff; opacity: 0.8; animation: fall 0.7s linear infinite; }
-    @keyframes fall { from { transform: translateY(0); opacity: 0.9; } to { transform: translateY(1400%); opacity: 0.2; } }
+    @keyframes fall { from { transform: translateY(0); opacity: 0.9; } to { transform: translateY(1500%); opacity: 0.2; } }
     .running .chick { animation: wiggle 0.35s ease-in-out infinite; }
     @keyframes wiggle { 50% { transform: rotate(1.5deg) scale(1.01); } }
 
@@ -140,18 +151,39 @@
     .food { position: absolute; width: 22%; aspect-ratio: 1; pointer-events: none; }
     .food svg { width: 100%; height: 100%; }
 
+
+    /* ride bike: far layers crawl, near layers rush past */
+    #bike { overflow: hidden; }
+    #bike .stage { --g: calc(50% - var(--pad-b) / 2 + var(--pet-h) * 0.71); }
+    .layer { position: absolute; left: 0; right: 0; pointer-events: none; background-repeat: repeat-x;
+      background-size: var(--w) 100%; animation: scroll var(--t) linear infinite; }
+    @keyframes scroll { to { background-position-x: calc(var(--w) * -1); } }
+    .sky { position: absolute; inset: 0; background: linear-gradient(#8fd3ff, #e6f6ff 60%); }
+    .sun { position: absolute; top: 8%; right: 10%; width: 70px; height: 70px; border-radius: 50%; background: #ffd84d; }
+    .clouds { top: 6%; height: 120px; --w: 700px; --t: 58s; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20700%20120%22%20width%3D%22700%22%20height%3D%22120%22%20%3E%3Cg%20fill%3D%22%23fff%22%20opacity%3D%22.9%22%3E%3Cellipse%20cx%3D%22100%22%20cy%3D%2260%22%20rx%3D%2250%22%20ry%3D%2220%22/%3E%3Cellipse%20cx%3D%22135%22%20cy%3D%2248%22%20rx%3D%2235%22%20ry%3D%2220%22/%3E%3Cellipse%20cx%3D%22420%22%20cy%3D%2240%22%20rx%3D%2260%22%20ry%3D%2222%22/%3E%3Cellipse%20cx%3D%22470%22%20cy%3D%2230%22%20rx%3D%2235%22%20ry%3D%2218%22/%3E%3Cellipse%20cx%3D%22600%22%20cy%3D%2285%22%20rx%3D%2245%22%20ry%3D%2216%22/%3E%3C/g%3E%3C/svg%3E"); }
+    .hills { top: calc(var(--g) - 180px); height: 180px; --w: 800px; --t: 32s; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20800%20180%22%20width%3D%22800%22%20height%3D%22180%22%20%3E%3Cpath%20d%3D%22M0%20180V110Q100%2030%20200%20100T400%20100T600%2090T800%20110V180Z%22%20fill%3D%22%23a9d6b8%22/%3E%3Cpath%20d%3D%22M0%20180V140Q150%2090%20300%20135T600%20130T800%20140V180Z%22%20fill%3D%22%238ac79d%22/%3E%3C/svg%3E"); }
+    .trees { top: calc(var(--g) - 150px); height: 140px; --w: 500px; --t: 5.6s; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20500%20140%22%20width%3D%22500%22%20height%3D%22140%22%20%3E%3Cg%3E%3Crect%20x%3D%2260%22%20y%3D%22100%22%20width%3D%2210%22%20height%3D%2240%22%20fill%3D%22%238a5a2b%22/%3E%3Ccircle%20cx%3D%2265%22%20cy%3D%2278%22%20r%3D%2234%22%20fill%3D%22%233f9a4f%22/%3E%3Crect%20x%3D%22228%22%20y%3D%22108%22%20width%3D%228%22%20height%3D%2232%22%20fill%3D%22%238a5a2b%22/%3E%3Ccircle%20cx%3D%22232%22%20cy%3D%2292%22%20r%3D%2226%22%20fill%3D%22%234cae5c%22/%3E%3Crect%20x%3D%22396%22%20y%3D%2298%22%20width%3D%2210%22%20height%3D%2242%22%20fill%3D%22%238a5a2b%22/%3E%3Ccircle%20cx%3D%22401%22%20cy%3D%2274%22%20r%3D%2236%22%20fill%3D%22%233f9a4f%22/%3E%3C/g%3E%3C/svg%3E"); }
+    .grass { top: calc(var(--g) - 12px); bottom: 0; background: #7ccf6a; animation: none; }
+    .road { top: calc(var(--g) - 12px); height: 50px; --w: 120px; --t: 0.33s; background-color: #6b6b73; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%2050%22%20width%3D%22120%22%20height%3D%2250%22%20%3E%3Crect%20x%3D%2230%22%20y%3D%2222%22%20width%3D%2260%22%20height%3D%225%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E"); }
+    .tufts { top: calc(var(--g) + 50px); height: 70px; --w: 300px; --t: 0.7s; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20300%2070%22%20width%3D%22300%22%20height%3D%2270%22%20%3E%3Cg%20fill%3D%22%232f8a3f%22%3E%3Cpath%20d%3D%22M20%2070L26%2020L32%2070Z%22/%3E%3Cpath%20d%3D%22M30%2070L44%2030L50%2070Z%22/%3E%3Cpath%20d%3D%22M130%2070L138%2015L146%2070Z%22/%3E%3Cpath%20d%3D%22M142%2070L158%2035L164%2070Z%22/%3E%3Cpath%20d%3D%22M230%2070L236%2025L244%2070Z%22/%3E%3Cpath%20d%3D%22M242%2070L256%2038L262%2070Z%22/%3E%3C/g%3E%3C/svg%3E"); z-index: 2; }
+    .wind { top: calc(var(--g) - var(--pet-h) * 1.1); height: var(--pet-h); --w: 400px; --t: 0.45s; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20100%22%20width%3D%22400%22%20height%3D%22100%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%20fill%3D%22%23fff%22%20opacity%3D%22.8%22%3E%3Crect%20x%3D%2220%22%20y%3D%2215%22%20width%3D%22120%22%20height%3D%22.7%22%20rx%3D%22.35%22/%3E%3Crect%20x%3D%22200%22%20y%3D%2240%22%20width%3D%22160%22%20height%3D%22.7%22%20rx%3D%22.35%22/%3E%3Crect%20x%3D%2260%22%20y%3D%2265%22%20width%3D%22100%22%20height%3D%22.7%22%20rx%3D%22.35%22/%3E%3Crect%20x%3D%22280%22%20y%3D%2285%22%20width%3D%2290%22%20height%3D%22.7%22%20rx%3D%22.35%22/%3E%3C/g%3E%3C/svg%3E"); z-index: 2; }
+    .bike, .bike-front { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .wheel { transform-box: fill-box; transform-origin: center; animation: spin 1s linear infinite; }
+    .crank { transform-box: fill-box; transform-origin: center; animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .riding .chick { animation: bob 0.45s ease-in-out infinite; }
+    @keyframes bob { 50% { transform: translateY(-1.2%); } }
+
     @media (pointer: coarse) {
       #wornBox .handle { width: 26px; height: 26px; margin: -13px; }
     }
     @media (max-width: 700px) {
-      :root { --pet-h: 34vh; }
+      :root { --pet-h: 34vh; --pad-r: 0px; --pad-b: 88px; }
       body { flex-direction: column; }
       nav { width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 8px; }
       nav button { width: auto; padding: 8px 10px; font-size: 0.75rem; }
       main { width: 100%; flex: 1; min-height: 0; }
-      .scene.active { flex-direction: column; }
-      .stage { min-height: 0; gap: 8px; }
-      .options { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 8px; }
+      .options { top: auto; left: 0; width: auto; height: 88px; flex-direction: row; flex-wrap: wrap; padding: 8px; gap: 8px; }
       .options button { width: 64px; height: 64px; }
     }
   </style>
@@ -168,8 +200,8 @@
     <section id="home" class="active"><h1>HOME</h1></section>
     <section id="dress" class="scene">
       <div class="stage">
-        <button id="export">EXPORT PNG</button>
         <div class="pet">
+          <button id="export">EXPORT PNG</button>
           <img id="chicken" src="assets/chicken.png" alt="Chicken">
           <div id="wornBox">
             <img id="worn" alt="Dress" draggable="false">
@@ -208,7 +240,30 @@
         <button data-food="pizza" aria-label="Pizza"><svg viewBox="0 0 100 100"><path d="M50 94L10 24Q50 8 90 24z" fill="#ffc94d" stroke="#e8a33a" stroke-width="3" stroke-linejoin="round"/><path d="M10 24Q50 8 90 24" fill="none" stroke="#d98b3a" stroke-width="9" stroke-linecap="round"/><circle cx="36" cy="36" r="7" fill="#d62828"/><circle cx="62" cy="38" r="7" fill="#d62828"/><circle cx="50" cy="60" r="7" fill="#d62828"/></svg></button>
       </div>
     </section>
-    <section id="bike"><h1>RIDE BIKE</h1></section>
+    <section id="bike" class="scene">
+      <div class="stage">
+        <div class="sky"></div><div class="sun"></div>
+        <div class="layer clouds"></div><div class="layer hills"></div><div class="layer trees"></div>
+        <div class="layer grass"></div><div class="layer road"></div>
+        <div class="pet riding">
+          <svg class="bike" viewBox="0 0 433 461" aria-hidden="true">
+            <g transform="translate(90 505)"><circle r="55" fill="none" stroke="#222" stroke-width="8"/><g class="wheel"><path d="M-55 0H55M0 -55V55M-39 -39L39 39M-39 39L39 -39" stroke="#888" stroke-width="2"/></g></g><g transform="translate(340 505)"><circle r="55" fill="none" stroke="#222" stroke-width="8"/><g class="wheel"><path d="M-55 0H55M0 -55V55M-39 -39L39 39M-39 39L39 -39" stroke="#888" stroke-width="2"/></g></g>
+            <g stroke="#e63946" stroke-width="8" stroke-linecap="round" fill="none">
+              <path d="M90 505L200 500L185 445L90 505M185 445L318 445L200 500M318 445L340 505"/>
+            </g>
+            <path d="M160 440H215" stroke="#222" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="200" cy="500" r="16" fill="none" stroke="#444" stroke-width="5"/>
+            <g class="crank"><path d="M200 484V516" stroke="#444" stroke-width="5"/><rect x="190" y="480" width="20" height="6" fill="#222"/></g>
+          </svg>
+          <img class="chick" src="assets/chicken.png" alt="Chicken">
+          <svg class="bike-front" viewBox="0 0 433 461" aria-hidden="true">
+            <path d="M318 445L336 395L362 388" stroke="#e63946" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M356 388H372" stroke="#222" stroke-width="10" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="layer tufts"></div><div class="layer wind"></div>
+      </div>
+    </section>
   </main>
   <script>
     const tabs = document.querySelectorAll('nav button');
