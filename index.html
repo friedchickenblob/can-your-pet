@@ -58,6 +58,8 @@
       justify-content: center;
       align-items: center;
       text-align: center;
+      position: relative;
+      overflow: hidden;
     }
     section { display: none; }
     section.active { display: block; }
@@ -111,6 +113,7 @@
       top: 0;
       bottom: 0;
       right: 0;
+      z-index: 8;
       width: 160px;
       display: flex;
       flex-direction: column;
@@ -158,8 +161,6 @@
     .layer { position: absolute; left: 0; right: 0; pointer-events: none; background-repeat: repeat-x;
       background-size: var(--w) 100%; animation: scroll var(--t) linear infinite; }
     @keyframes scroll { to { background-position-x: calc(var(--w) * -1); } }
-    .sky { position: absolute; inset: 0; background: linear-gradient(#8fd3ff, #e6f6ff 60%); }
-    .sun { position: absolute; top: 8%; right: 10%; width: 70px; height: 70px; border-radius: 50%; background: #ffd84d; }
     .clouds { top: 6%; height: 120px; --w: 700px; --t: 58s; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20700%20120%22%20width%3D%22700%22%20height%3D%22120%22%20%3E%3Cg%20fill%3D%22%23fff%22%20opacity%3D%22.9%22%3E%3Cellipse%20cx%3D%22100%22%20cy%3D%2260%22%20rx%3D%2250%22%20ry%3D%2220%22/%3E%3Cellipse%20cx%3D%22135%22%20cy%3D%2248%22%20rx%3D%2235%22%20ry%3D%2220%22/%3E%3Cellipse%20cx%3D%22420%22%20cy%3D%2240%22%20rx%3D%2260%22%20ry%3D%2222%22/%3E%3Cellipse%20cx%3D%22470%22%20cy%3D%2230%22%20rx%3D%2235%22%20ry%3D%2218%22/%3E%3Cellipse%20cx%3D%22600%22%20cy%3D%2285%22%20rx%3D%2245%22%20ry%3D%2216%22/%3E%3C/g%3E%3C/svg%3E"); }
     .hills { top: calc(var(--g) - 180px); height: 180px; --w: 800px; --t: 32s; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20800%20180%22%20width%3D%22800%22%20height%3D%22180%22%20%3E%3Cpath%20d%3D%22M0%20180V110Q100%2030%20200%20100T400%20100T600%2090T800%20110V180Z%22%20fill%3D%22%23a9d6b8%22/%3E%3Cpath%20d%3D%22M0%20180V140Q150%2090%20300%20135T600%20130T800%20140V180Z%22%20fill%3D%22%238ac79d%22/%3E%3C/svg%3E"); }
     .trees { top: calc(var(--g) - 150px); height: 140px; --w: 500px; --t: 5.6s; background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20500%20140%22%20width%3D%22500%22%20height%3D%22140%22%20%3E%3Cg%3E%3Crect%20x%3D%2260%22%20y%3D%22100%22%20width%3D%2210%22%20height%3D%2240%22%20fill%3D%22%238a5a2b%22/%3E%3Ccircle%20cx%3D%2265%22%20cy%3D%2278%22%20r%3D%2234%22%20fill%3D%22%233f9a4f%22/%3E%3Crect%20x%3D%22228%22%20y%3D%22108%22%20width%3D%228%22%20height%3D%2232%22%20fill%3D%22%238a5a2b%22/%3E%3Ccircle%20cx%3D%22232%22%20cy%3D%2292%22%20r%3D%2226%22%20fill%3D%22%234cae5c%22/%3E%3Crect%20x%3D%22396%22%20y%3D%2298%22%20width%3D%2210%22%20height%3D%2242%22%20fill%3D%22%238a5a2b%22/%3E%3Ccircle%20cx%3D%22401%22%20cy%3D%2274%22%20r%3D%2236%22%20fill%3D%22%233f9a4f%22/%3E%3C/g%3E%3C/svg%3E"); }
@@ -174,10 +175,80 @@
     .riding .chick { animation: bob 0.45s ease-in-out infinite; }
     @keyframes bob { 50% { transform: translateY(-1.2%); } }
 
+
+    /* day / night */
+    #dim { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: #050a2a; opacity: var(--dim, 0); }
+    #clock { position: absolute; top: 12px; right: 16px; z-index: 7; padding: 6px 12px; font-weight: 700;
+      background: rgba(255, 255, 255, 0.75); border: 2px solid var(--text); border-radius: 12px; white-space: nowrap; }
+    .sky { --orb: 70px; position: absolute; inset: 0; overflow: hidden;
+      background: linear-gradient(var(--sky-top, #6ec3ff), var(--sky-bot, #e6f6ff) 70%); }
+    .orb { position: absolute; width: var(--orb); height: var(--orb); border-radius: 50%; transform: translate(-50%, -50%); }
+    .orb.sun { left: var(--sun-x); top: var(--sun-y); opacity: var(--sun-o); background: #ffe45c; box-shadow: 0 0 calc(var(--orb) * 0.6) #ffd84d; }
+    .orb.moon { left: var(--moon-x); top: var(--moon-y); opacity: var(--moon-o); background: #f4f1de;
+      box-shadow: inset calc(var(--orb) * -0.18) calc(var(--orb) * -0.1) 0 rgba(0, 0, 0, 0.12), 0 0 calc(var(--orb) * 0.5) rgba(220, 230, 255, 0.6); }
+    .stars { position: absolute; inset: 0; opacity: var(--star, 0);
+      background-image: radial-gradient(1.5px 1.5px at 20px 30px, #fff, transparent), radial-gradient(1px 1px at 80px 70px, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 140px 20px, #fff, transparent), radial-gradient(1px 1px at 170px 120px, #fff, transparent),
+        radial-gradient(1px 1px at 50px 150px, #fff, transparent);
+      background-size: 200px 180px; }
+    .win { --orb: calc(var(--pet-h) * 0.06); position: absolute; left: 3%; top: 6%; z-index: 6; overflow: hidden;
+      width: calc(var(--pet-h) * 0.36); height: calc(var(--pet-h) * 0.44);
+      border: 6px solid #7a4b27; border-radius: 8px 8px 0 0; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); }
+    .win-sky { position: absolute; inset: 0; background: linear-gradient(var(--sky-top, #6ec3ff), var(--sky-bot, #e6f6ff)); }
+    .win-sky::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 14%; background: #4f9d4f; }
+    .win::after { content: ""; position: absolute; inset: 0;
+      background: linear-gradient(#7a4b27, #7a4b27) center / 100% 5px no-repeat, linear-gradient(#7a4b27, #7a4b27) center / 5px 100% no-repeat; }
+    .rays { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+      -webkit-mask-image: linear-gradient(to right, #000 15%, transparent 95%); mask-image: linear-gradient(to right, #000 15%, transparent 95%); }
+
+    /* home */
+    #home .stage { --g: calc(50% - var(--pad-b) / 2 + var(--pet-h) * 0.5); --hx: calc((100% - var(--pad-r)) / 2); }
+    .house { position: absolute; left: var(--hx); transform: translateX(-50%); width: calc(var(--pet-h) * 1.1);
+      top: calc(var(--g) - var(--pet-h) * 1.37); height: calc(var(--pet-h) * 1.25); }
+    .roof { position: absolute; left: -6%; width: 112%; height: calc(var(--pet-h) * 0.3); background: #b5483a;
+      clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+    .wall { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--pet-h) * 0.95);
+      background: repeating-linear-gradient(#f3d9b1 0 18px, #e6c99c 18px 20px); border: 3px solid #c9a56e; border-bottom: 0; }
+    .hwin { position: absolute; left: 6%; top: 6%; z-index: 6; width: calc(var(--pet-h) * 0.3); height: calc(var(--pet-h) * 0.3);
+      border: 6px solid #7a4b27; border-radius: 6px; overflow: hidden; }
+    .room { position: absolute; inset: 0; background: var(--lamp, #e8dcc0); }
+    .room::after { content: ""; position: absolute; inset: 0; z-index: 3;
+      background: linear-gradient(#7a4b27, #7a4b27) center / 100% 5px no-repeat, linear-gradient(#7a4b27, #7a4b27) center / 5px 100% no-repeat; }
+    .room > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .bed-front { z-index: 2; }
+    .sleeper { position: absolute; left: 12%; bottom: 38%; width: 44%; z-index: 1; opacity: 0; transition: opacity 0.6s; }
+    .sleeper img { display: block; width: 100%; transform: rotate(-8deg); }
+    .asleep .sleeper { opacity: 1; }
+    .waking .sleeper img { animation: wake 2.4s ease-in-out; }
+    @keyframes wake { 20% { transform: translateY(-10%) scale(1.08, 0.92); } 40% { transform: translateY(0) rotate(0); }
+      60% { transform: translateY(-18%) rotate(0); } 80% { transform: translateY(0) rotate(6deg); } }
+    .zzz, .alert { position: absolute; z-index: 4; display: none; font-weight: 800; font-size: calc(var(--pet-h) * 0.05); }
+    .zzz { right: 8%; top: 10%; color: #556; }
+    .zzz span { position: absolute; opacity: 0; animation: zfloat 2.4s linear infinite; }
+    .zzz span:nth-child(2) { animation-delay: 0.8s; } .zzz span:nth-child(3) { animation-delay: 1.6s; }
+    @keyframes zfloat { 0% { opacity: 0; transform: translate(0, 12px) scale(0.6); } 30% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-10px, -26px) scale(1.2); } }
+    .alert { right: 18%; top: 6%; color: #d00; font-size: calc(var(--pet-h) * 0.09); }
+    .asleep .zzz { display: block; }
+    .waking .zzz { display: none; }
+    .waking .alert { display: block; }
+    .door { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+      width: calc(var(--pet-h) * 0.26); height: calc(var(--pet-h) * 0.5);
+      background: #2a1a0c; border: 5px solid #5a3a1c; border-bottom: 0; border-radius: 8px 8px 0 0; }
+    .leaf { position: absolute; inset: 0; background: #9a6a35; border-radius: 4px 4px 0 0;
+      transform-origin: left center; transition: transform 0.5s; }
+    .leaf::after { content: ""; position: absolute; right: 12%; top: 52%; width: 8px; height: 8px; border-radius: 50%; background: #ffd84d; }
+    .door.open .leaf { transform: perspective(400px) rotateY(-80deg); }
+    .lawn { position: absolute; left: 0; right: 0; bottom: 0; top: calc(var(--g) - var(--pet-h) * 0.12);
+      background: linear-gradient(#78c862, #5fae4c); }
+    #homePet { transform-origin: 50% 100%; }
+
     @media (pointer: coarse) {
       #wornBox .handle { width: 26px; height: 26px; margin: -13px; }
     }
     @media (max-width: 700px) {
+      #clock { top: 8px; right: 8px; padding: 4px 8px; font-size: 0.85rem; }
+      .sky { --orb: 48px; }
       :root { --pet-h: 34vh; --pad-r: 0px; --pad-b: 88px; }
       body { flex-direction: column; }
       nav { width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 8px; }
@@ -197,7 +268,28 @@
     <button role="tab" data-tab="bike" aria-selected="false">RIDE BIKE</button>
   </nav>
   <main>
-    <section id="home" class="active"><h1>HOME</h1></section>
+    <div id="dim"></div>
+    <div id="clock"><span id="clockIcon">&#9728;</span> <span id="clockTime">8:00 AM</span></div>
+    <section id="home" class="scene active">
+      <div class="stage">
+        <div class="sky"><div class="stars"></div><div class="orb sun"></div><div class="orb moon"></div></div>
+        <div class="house">
+          <div class="roof"></div>
+          <div class="wall">
+            <div class="hwin"><div class="room">
+              <svg viewBox="0 0 100 100" aria-hidden="true"><rect x="6" y="40" width="7" height="44" fill="#7a4b27"/><rect x="87" y="52" width="7" height="32" fill="#7a4b27"/><rect x="10" y="64" width="80" height="14" fill="#fff"/><ellipse cx="26" cy="60" rx="12" ry="6" fill="#fff" stroke="#cdd" stroke-width="1"/></svg>
+              <div class="sleeper"><img src="assets/chicken.png" alt=""></div>
+              <svg class="bed-front" viewBox="0 0 100 100" aria-hidden="true"><rect x="30" y="58" width="60" height="22" rx="4" fill="#6a8fd8"/><rect x="30" y="66" width="60" height="4" fill="#5877bd"/></svg>
+              <div class="zzz"><span>z</span><span>z</span><span>Z</span></div>
+              <div class="alert">!</div>
+            </div></div>
+            <div class="door"><div class="leaf"></div></div>
+          </div>
+        </div>
+        <div class="lawn"></div>
+        <div class="pet" id="homePet"><img src="assets/chicken.png" alt="Chicken"></div>
+      </div>
+    </section>
     <section id="dress" class="scene">
       <div class="stage">
         <div class="pet">
@@ -242,7 +334,7 @@
     </section>
     <section id="bike" class="scene">
       <div class="stage">
-        <div class="sky"></div><div class="sun"></div>
+        <div class="sky"><div class="stars"></div><div class="orb sun"></div><div class="orb moon"></div></div>
         <div class="layer clouds"></div><div class="layer hills"></div><div class="layer trees"></div>
         <div class="layer grass"></div><div class="layer road"></div>
         <div class="pet riding">
@@ -412,6 +504,149 @@
       f.remove();
       foodBtns.forEach(o => o.disabled = false);
     }));
+
+    // ---------- day / night cycle: 20 real minutes = 24 game hours (10 min day, 10 min night) ----------
+    const HOUR_MS = 50000;
+    let hourSkew = 8 * HOUR_MS - performance.now(); // start at 8:00 AM
+    const gameHour = () => ((performance.now() + hourSkew) / HOUR_MS) % 24;
+    window.setGameHour = h => { hourSkew = h * HOUR_MS - performance.now(); tick(); };
+
+    const hex = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+    const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+    const SKY = [ // hour, top, bottom, light level
+      [0, '#070b25', '#1a2250', 0], [4.5, '#070b25', '#1a2250', 0], [6, '#6d6bb0', '#ff9e6d', 0.4],
+      [7.5, '#6ec3ff', '#e6f6ff', 1], [16.5, '#6ec3ff', '#e6f6ff', 1], [18, '#7a5a9c', '#ff8a5c', 0.4],
+      [19.5, '#070b25', '#1a2250', 0], [24, '#070b25', '#1a2250', 0]
+    ];
+    function skyAt(h) {
+      for (let i = 0; i < SKY.length - 1; i++) {
+        if (h <= SKY[i + 1][0]) {
+          const [h0, t0, b0, l0] = SKY[i], [h1, t1, b1, l1] = SKY[i + 1], k = (h - h0) / (h1 - h0);
+          return { top: mix(hex(t0), hex(t1), k), bot: mix(hex(b0), hex(b1), k), light: l0 + (l1 - l0) * k };
+        }
+      }
+    }
+
+    const rootStyle = document.documentElement.style;
+    const clockIcon = document.getElementById('clockIcon');
+    const clockTime = document.getElementById('clockTime');
+
+    function updateRays(sun, p, moon, q) {
+      const sc = document.querySelector('.scene.active');
+      const rays = sc && sc.querySelector('.rays');
+      if (!rays) return;
+      const win = sc.querySelector('.win');
+      const x = win.offsetLeft + win.offsetWidth, y = win.offsetTop, h = win.offsetHeight;
+      const poly = rays.querySelector('polygon');
+      let strength = 0, a = 0, color = '255, 235, 150';
+      if (sun) { strength = 0.4 * Math.min(1, Math.sin(Math.PI * p) * 3); a = 18 + 50 * Math.sin(Math.PI * p); }
+      else if (moon) { strength = 0.18 * Math.min(1, Math.sin(Math.PI * q) * 3); a = 18 + 50 * Math.sin(Math.PI * q); color = '180, 200, 255'; }
+      const L = sc.clientWidth * 0.9, dx = L * Math.cos(a * Math.PI / 180), dy = L * Math.sin(a * Math.PI / 180);
+      poly.setAttribute('points', `${x},${y} ${x},${y + h} ${x + dx},${y + h + dy} ${x + dx},${y + dy}`);
+      poly.setAttribute('fill', `rgba(${color}, ${strength})`);
+    }
+
+    function tick() {
+      const h = gameHour();
+      const { top, bot, light } = skyAt(h);
+      const p = (h - 6) / 12, hn = (h - 18 + 24) % 24, q = (hn > 23 ? hn - 24 : hn) / 12;
+      const sunUp = p > -0.04 && p < 1.04, moonUp = q > -0.04 && q < 1.04;
+      const set = (k, v) => rootStyle.setProperty(k, v);
+      set('--sky-top', `rgb(${top})`); set('--sky-bot', `rgb(${bot})`);
+      set('--sun-x', 8 + 84 * p + '%'); set('--sun-y', 92 - 80 * Math.sin(Math.PI * p) + '%'); set('--sun-o', sunUp ? 1 : 0);
+      set('--moon-x', 8 + 84 * q + '%'); set('--moon-y', 92 - 80 * Math.sin(Math.PI * q) + '%'); set('--moon-o', moonUp ? 1 : 0);
+      set('--star', Math.max(0, Math.min(1, 1 - light * 1.6)));
+      set('--lamp', `rgb(${mix(hex('#e8dcc0'), hex('#ffc860'), 1 - light)})`);
+      const active = document.querySelector('.scene.active');
+      const outdoors = active && (active.id === 'home' || active.id === 'bike');
+      set('--dim', (1 - light) * (outdoors ? 0.3 : 0.5));
+      const hh = Math.floor(h), mm = Math.floor((h % 1) * 60);
+      clockTime.textContent = `${hh % 12 || 12}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}`;
+      clockIcon.innerHTML = h >= 6 && h < 18 ? '&#9728;' : '&#9790;';
+      updateRays(sunUp, p, moonUp, q);
+      homeTick(h);
+    }
+
+    // a window in every room scene: shows the sky and lets sun / moon rays in
+    document.querySelectorAll('#dress .stage, #shower .stage, #food .stage').forEach(st => st.insertAdjacentHTML('afterbegin',
+      '<svg class="rays" aria-hidden="true"><polygon points="0,0 0,0 0,0"/></svg>' +
+      '<div class="win" aria-hidden="true"><div class="win-sky"><div class="stars"></div><div class="orb sun"></div><div class="orb moon"></div></div></div>'));
+
+    // ---------- home: yard by day, bed by night ----------
+    const homePet = document.getElementById('homePet');
+    const house = document.querySelector('.house');
+    const door = house.querySelector('.door');
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    let pose = { x: 0, y: 0, s: 1, o: 1 }; // x, y in % of the chicken's size
+    let homeState = 'yard', jumpTimer = 0;
+    const tf = q => `translate(${q.x}%, ${q.y}%) scale(${q.s})`;
+    function applyPose() { homePet.style.transform = tf(pose); homePet.style.opacity = pose.o; }
+    function moveTo(to, ms, arc = 0) {
+      const from = { ...pose };
+      const frames = [{ transform: tf(from), opacity: from.o }];
+      if (arc) frames.push({ transform: tf({ x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 - arc, s: (from.s + to.s) / 2 }),
+        opacity: (from.o + to.o) / 2, offset: 0.5 });
+      frames.push({ transform: tf(to), opacity: to.o });
+      pose = { ...to }; applyPose();
+      homePet.animate(frames, { duration: ms, easing: 'ease-in-out' });
+      return sleep(ms); // timer, not anim.finished: keeps the story moving even if the page is throttled
+    }
+    function stopJumping() { clearTimeout(jumpTimer); }
+    function startJumping() {
+      stopJumping();
+      jumpTimer = setTimeout(async function jump() {
+        if (homeState !== 'yard') return;
+        const r = homePet.getBoundingClientRect(), st = homePet.parentElement.getBoundingClientRect();
+        const pw = homePet.offsetWidth, padR = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pad-r')) || 0;
+        const centre = st.left + (st.width - padR) / 2;
+        const limit = Math.max(8, Math.min(40, (Math.min(centre - st.left, st.right - centre) - pw / 2) / pw * 100 - 2));
+        const dir = pose.x > limit * 0.5 ? -1 : pose.x < -limit * 0.5 ? 1 : (Math.random() < 0.5 ? -1 : 1);
+        const nx = Math.max(-limit, Math.min(limit, pose.x + dir * (15 + Math.random() * 20)));
+        await moveTo({ ...pose, x: nx }, 700, 14);
+        jumpTimer = setTimeout(jump, 2500 + Math.random() * 2500);
+      }, 2500 + Math.random() * 2500);
+    }
+    const AT_DOOR = { x: 0, y: -12, s: 0.3 };
+    async function goToBed() {
+      homeState = 'walking'; stopJumping();
+      await moveTo({ ...pose, x: 0 }, 500, 8);
+      for (let i = 1; i <= 4; i++) {
+        const k = i / 4;
+        if (i === 3) door.classList.add('open');
+        await moveTo({ x: 0, y: AT_DOOR.y * k, s: 1 - 0.7 * k, o: i === 4 ? 0 : 1 }, 750, 10);
+      }
+      await sleep(300);
+      door.classList.remove('open');
+      house.classList.add('asleep');
+      homeState = 'bed';
+    }
+    async function wakeUp() {
+      homeState = 'walking';
+      house.classList.add('waking');
+      await sleep(2500);
+      house.classList.remove('asleep', 'waking');
+      pose = { ...AT_DOOR, o: 0 }; applyPose();
+      door.classList.add('open');
+      await sleep(500);
+      for (let i = 1; i <= 4; i++) {
+        const k = 1 - i / 4;
+        await moveTo({ x: 0, y: AT_DOOR.y * k, s: 1 - 0.7 * k, o: 1 }, 750, 10);
+      }
+      door.classList.remove('open');
+      homeState = 'yard';
+      startJumping();
+    }
+    function homeTick(h) {
+      const night = h >= 18.5 || h < 6;
+      if (night && homeState === 'yard') goToBed();
+      else if (!night && homeState === 'bed') wakeUp();
+    }
+    // initial state
+    if (gameHour() >= 18.5 || gameHour() < 6) {
+      homeState = 'bed'; pose = { ...AT_DOOR, o: 0 }; applyPose(); house.classList.add('asleep');
+    } else startJumping();
+    tick();
+    setInterval(tick, 250);
   </script>
 </body>
 </html>
