@@ -5,7 +5,7 @@ tabs.forEach(tab => tab.addEventListener('click', () => {
   panels.forEach(p => p.classList.toggle('active', p.id === tab.dataset.tab));
 }));
 
-const pet = document.querySelector('.pet');
+const pet = document.querySelector('#dress .pet');
 const box = document.getElementById('wornBox');
 const worn = document.getElementById('worn');
 const tint = box.querySelector('.tint');
