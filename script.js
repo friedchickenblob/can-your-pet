@@ -147,7 +147,7 @@ foodBtns.forEach(b => b.addEventListener('click', async () => {
 
 // ---------- day / night cycle: 20 real minutes = 24 game hours (10 min day, 10 min night) ----------
 const HOUR_MS = 50000;
-let hourSkew = 8 * HOUR_MS - performance.now(); // start at 8:00 AM
+let hourSkew = 6 * HOUR_MS - performance.now(); // start at 6:00 AM sunrise
 const gameHour = () => ((performance.now() + hourSkew) / HOUR_MS) % 24;
 window.setGameHour = h => { hourSkew = h * HOUR_MS - performance.now(); tick(); };
 
@@ -281,9 +281,7 @@ function homeTick(h) {
   if (night && homeState === 'yard') goToBed();
   else if (!night && homeState === 'bed') wakeUp();
 }
-// initial state
-if (gameHour() >= 18.5 || gameHour() < 6) {
-  homeState = 'bed'; pose = { ...AT_DOOR, o: 0 }; applyPose(); house.classList.add('asleep');
-} else startJumping();
+// initial state: every page load starts at sunrise with the chicken in bed, so it wakes up and walks out
+homeState = 'bed'; pose = { ...AT_DOOR, o: 0 }; applyPose(); house.classList.add('asleep');
 tick();
 setInterval(tick, 250);
